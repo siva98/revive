@@ -8,11 +8,6 @@ import (
 	"github.com/mgechev/revive/lint"
 )
 
-type Rule interface {
-	Name() string
-	Apply(*File, Arguments) []Failure
-}
-
 type DivideByZeroRule struct{}
 
 // Apply applies the rule to given file.

@@ -23,3 +23,4 @@ warningCode = 0
 [rule.unexported-return]
 [rule.indent-error-flow]
 [rule.errorf]
+[rule.divide-by-zero]

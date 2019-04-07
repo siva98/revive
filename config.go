@@ -41,6 +41,7 @@ var defaultRules = []lint.Rule{
 	&rule.TimeNamingRule{},
 	&rule.ContextKeysType{},
 	&rule.ContextAsArgumentRule{},
+        &rule.DivideByZeroRule{},
 }
 
 var allRules = append([]lint.Rule{

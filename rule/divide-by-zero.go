@@ -39,7 +39,7 @@ type lintDivideByZero struct {
 	onFailure func(lint.Failure)
 }
 
-func (w lintImports) Visit(n ast.Node) ast.Visitor {
+func (w lintDivideByZero) Visit(n ast.Node) ast.Visitor {
 	be, ok := n.(*ast.BinaryExpr)
 	if !ok {
 		return w

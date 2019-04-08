@@ -38,7 +38,7 @@ type lintRestrictGlobalVariables struct {
 	onFailure func(lint.Failure)
 }
 
-func (w lintRestrictGlobalVariables) Visit(n ast.Node) ast.Visitor {
+func (w lintRestrictGlobalVariables) Visit(node ast.Node) ast.Visitor {
 	globalVar := true
 	ast.Inspect(node, func(n ast.Node) bool {
 		switch n := n.(type) {

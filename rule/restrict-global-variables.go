@@ -38,21 +38,18 @@ type lintRestrictGlobalVariables struct {
 	onFailure func(lint.Failure)
 }
 
-func (w lintRestrictGlobalVariables) Visit(node ast.Node) ast.Visitor {
+func (w lintRestrictGlobalVariables) Visit(n ast.Node) ast.Visitor {
 	globalVar := true
 	ast.Inspect(node, func(n ast.Node) bool {
 		switch n := n.(type) {
 		case *ast.ValueSpec:
-			fmt.Println("Variable name: ")
-			for _, name := range n.Names {
-				if globalVar == true {
-					w.onFailure(lint.Failure{
-						Failure:    fmt.Sprintf("global variable found: %s, should not use global variable as they are not tracked on the ledger", name.Name),
-						Confidence: 1,
-						Node:       n,
-						Category:   "variable scope",
-					})
-				}
+			if globalVar == true {
+				w.onFailure(lint.Failure{
+					Failure:    fmt.Printf("global variable found, should not use global variable as they are not tracked on the ledger"),
+					Confidence: 1,
+					Node:       n,
+					Category:   "variable scope",
+				})
 			}
 		case *ast.FuncDecl:
 			globalVar = false

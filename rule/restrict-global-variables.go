@@ -1,7 +1,6 @@
 package rule
 
 import (
-	"fmt"
 	"go/ast"
 
 	"github.com/mgechev/revive/lint"

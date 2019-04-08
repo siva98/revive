@@ -42,6 +42,7 @@ var defaultRules = []lint.Rule{
 	&rule.ContextKeysType{},
 	&rule.ContextAsArgumentRule{},
         &rule.DivideByZeroRule{},
+	&rule.ImportsBlacklistRule{},
 }
 
 var allRules = append([]lint.Rule{
@@ -65,7 +66,6 @@ var allRules = append([]lint.Rule{
 	&rule.ConstantLogicalExprRule{},
 	&rule.BoolLiteralRule{},
 	&rule.RedefinesBuiltinIDRule{},
-	&rule.ImportsBlacklistRule{},
 	&rule.FunctionResultsLimitRule{},
 	&rule.MaxPublicStructsRule{},
 	&rule.RangeValInClosureRule{},

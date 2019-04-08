@@ -24,4 +24,3 @@ warningCode = 0
 [rule.indent-error-flow]
 [rule.errorf]
 [rule.divide-by-zero]
-[rule.restrict-global-variables]

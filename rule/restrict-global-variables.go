@@ -57,7 +57,7 @@ func (w lintRestrictGlobalVariables) Visit(node ast.Node) ast.Visitor {
 		case *ast.FuncDecl:
 			globalVar = false
 		}
-		return w
+		return true
 	})
 	return w
 

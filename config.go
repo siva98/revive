@@ -42,6 +42,7 @@ var defaultRules = []lint.Rule{
 	&rule.ContextKeysType{},
 	&rule.ContextAsArgumentRule{},
         &rule.DivideByZeroRule{},
+	&rule.RestrictGlobalVariablesRule{},
 }
 
 var allRules = append([]lint.Rule{

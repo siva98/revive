@@ -39,30 +39,26 @@ type lintRestrictGlobalVariables struct {
 }
 
 func (w lintRestrictGlobalVariables) Visit(node ast.Node) ast.Visitor {
-	for _, decl := range node.Decls {
-		gd, ok := decl.(*ast.GenDecl)
-		if !ok {
-			continue
-		}
-		for _, spec := range gd.Specs {
-			ast.Inspect(spec, func(n ast.Node) bool {
-				switch n := n.(type) {
-				case *ast.ValueSpec:
-					fmt.Println("Variable name: ")
-					for _, name := range n.Names {
-						fmt.Println(name.Name)
-						w.onFailure(lint.Failure{
-							Failure:    fmt.Sprintf("global variable detetced: %s, should not use global variable as they are not tracked on the ledger", name.Name),
-							Confidence: 1,
-							Node:       n,
-							Category:   "variable scope",
-						})
-						return w
-					}
+	globalVar := true
+	ast.Inspect(node, func(n ast.Node) bool {
+		switch n := n.(type) {
+		case *ast.ValueSpec:
+			fmt.Println("Variable name: ")
+			for _, name := range n.Names {
+				if globalVar == true {
+					w.onFailure(lint.Failure{
+						Failure:    fmt.Sprintf("global variable found: %s, should not use global variable as they are not tracked on the ledger", name.Name),
+						Confidence: 1,
+						Node:       n,
+						Category:   "variable scope",
+					})
 				}
-				return true
-			})
+			}
+		case *ast.FuncDecl:
+			globalVar = false
 		}
-	}
+		return w
+	})
 	return w
+
 }

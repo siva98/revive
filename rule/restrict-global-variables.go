@@ -45,7 +45,7 @@ func (w lintRestrictGlobalVariables) Visit(node ast.Node) ast.Visitor {
 		case *ast.ValueSpec:
 			if globalVar == true {
 				w.onFailure(lint.Failure{
-					Failure:    fmt.Printf("global variable found, should not use global variable as they are not tracked on the ledger"),
+					Failure:    "global variable found, should not use global variable as they are not tracked on the ledger",
 					Confidence: 1,
 					Node:       n,
 					Category:   "variable scope",

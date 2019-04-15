@@ -49,29 +49,43 @@ func (w lintReadAfterWrite) Visit(node ast.Node) ast.Visitor {
 	case *ast.FuncDecl:
 		writeKey = ""
 		readKey = ""
+
 		ast.Inspect(n.Body, func(x ast.Node) bool {
 			switch x := x.(type) {
 			case *ast.CallExpr:
 				callExpr := nodeString(x.Fun)
+
 				if strings.Contains(callExpr, ".") {
 					putState := strings.Split(callExpr, ".")
+
 					if putState[1] == "PutState" {
 						writeKey = nodeString(x.Args[0])
+
 						ast.Inspect(n.Body, func(y ast.Node) bool {
 							switch y := y.(type) {
 							case *ast.CallExpr:
 								callExpr = nodeString(y.Fun)
+
 								if strings.Contains(callExpr, ".") {
 									putState := strings.Split(callExpr, ".")
+
 									if putState[1] == "GetState" {
 										readKey = nodeString(y.Args[0])
+
 										if y.Pos() > x.Pos() && readKey == writeKey {
 											w.onFailure(lint.Failure{
 												Confidence: 1,
-												Failure:    "should not read after write",
+												Failure:    "should not read after write: write",
+												Node:       x,
+												Category:   "control flow",
+											})
+											w.onFailure(lint.Failure{
+												Confidence: 1,
+												Failure:    "should not read after write: read",
 												Node:       y,
 												Category:   "control flow",
 											})
+
 											return true
 										}
 									}

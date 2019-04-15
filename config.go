@@ -43,6 +43,7 @@ var defaultRules = []lint.Rule{
 	&rule.ContextAsArgumentRule{},
         &rule.DivideByZeroRule{},
 	&rule.ImportsBlacklistRule{},
+	&rule.GoRoutinesRule{},
 }
 
 var allRules = append([]lint.Rule{

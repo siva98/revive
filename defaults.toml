@@ -25,3 +25,4 @@ warningCode = 0
 [rule.errorf]
 [rule.divide-by-zero]
 [rule.imports-blacklist]
+[rule.go-routines]

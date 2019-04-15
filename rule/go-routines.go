@@ -1,6 +1,7 @@
 package rule
 
 import (
+	"fmt"
 	"go/ast"
 
 	"github.com/mgechev/revive/lint"
@@ -40,6 +41,7 @@ type lintGoRoutines struct {
 func (w *lintGoRoutines) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.GoStmt:
+		fmt.Println("WHY")
 		w.onFailure(lint.Failure{
 			Confidence: 1,
 			Failure:    "should not use goroutines, will lead to non-deterministic behaviour",

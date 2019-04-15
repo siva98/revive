@@ -37,8 +37,8 @@ type lintGoRoutines struct {
 	onFailure func(lint.Failure)
 }
 
-func (w lintGoRoutines) Visit(n ast.Node) ast.Visitor {
-	switch n := n.(type) {
+func (w *lintGoRoutines) Visit(node ast.Node) ast.Visitor {
+	switch n := node.(type) {
 	case *ast.GoStmt:
 		w.onFailure(lint.Failure{
 			Confidence: 1,

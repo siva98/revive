@@ -39,16 +39,18 @@ type lintGoRoutines struct {
 }
 
 func (w *lintGoRoutines) Visit(node ast.Node) ast.Visitor {
+	fmt.Println("1")
 	switch n := node.(type) {
 	case *ast.GoStmt:
-		fmt.Println("WHY")
+		fmt.Println("2")
 		w.onFailure(lint.Failure{
 			Confidence: 1,
 			Failure:    "should not use goroutines, will lead to non-deterministic behaviour",
 			Node:       n,
 			Category:   "goroutines",
 		})
-		return w
+		//return w
 	}
+	fmt.Println("3")
 	return w
 }

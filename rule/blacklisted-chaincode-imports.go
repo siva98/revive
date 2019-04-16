@@ -38,9 +38,9 @@ type lintBlacklistedChaincodeImports struct {
 	onFailure func(lint.Failure)
 }
 
-var blacklistedImports = []string{"time"}
-
 func (w lintBlacklistedChaincodeImports) Visit(node ast.Node) ast.Visitor {
+	var blacklistedImports = []string{"time"}
+	
 	switch n := node.(type) {
 	case *ast.ImportSpec:
 		for _, blacklistedImport := range blacklistedImports {

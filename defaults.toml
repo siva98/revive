@@ -27,3 +27,4 @@ warningCode = 0
 [rule.imports-blacklist]
 [rule.go-routines]
 [rule.read-after-write]
+[rule.blacklisted-chaincode-imports]

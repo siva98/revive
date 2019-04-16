@@ -44,7 +44,8 @@ var defaultRules = []lint.Rule{
         &rule.DivideByZeroRule{},
 	&rule.ImportsBlacklistRule{},
 	&rule.GoRoutinesRule{},
-	&rule.ReadAfterWrite{},
+	&rule.ReadAfterWriteRule{},
+	&rule.BlacklistedChaincodeImportsRule{},
 }
 
 var allRules = append([]lint.Rule{

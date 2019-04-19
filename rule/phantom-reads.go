@@ -53,24 +53,24 @@ func (w lintPhantomReads) Visit(node ast.Node) ast.Visitor {
     ast.Inspect(n.Body, func(x ast.Node) bool {
       switch x := x.(type) {
       case *ast.CallExpr:
-        callExpr := nodeString(x.Fun)
+        callExpr := nodeStringPhantomReads(x.Fun)
 
         if strings.Contains(callExpr, ".") {
           putState := strings.Split(callExpr, ".")
 
           if putState[1] == "GetHistoryForKey" || putState[1] == "GetQueryResult" {
-            getQueryOrKey = nodeString(x.Args[0])
+            getQueryOrKey = nodeStringPhantomReads(x.Args[0])
 
             ast.Inspect(n.Body, func(y ast.Node) bool {
               switch y := y.(type) {
               case *ast.CallExpr:
-                callExpr = nodeString(y.Fun)
+                callExpr = nodeStringPhantomReads(y.Fun)
 
                 if strings.Contains(callExpr, ".") {
                   putState := strings.Split(callExpr, ".")
 
                   if putState[1] == "PutState" {
-                    writeQueryOrKey = nodeString(y.Args[0])
+                    writeQueryOrKey = nodeStringPhantomReads(y.Args[0])
 
                     if y.Pos() > x.Pos() && writeQueryOrKey == getQueryOrKey {
                       w.onFailure(lint.Failure{
@@ -103,7 +103,7 @@ func (w lintPhantomReads) Visit(node ast.Node) ast.Visitor {
 	return w
 }
 
-func nodeString(n ast.Node) string {
+func nodeStringPhantomReads(n ast.Node) string {
 	var fset = token.NewFileSet()
 	var buf bytes.Buffer
 	format.Node(&buf, fset, n)

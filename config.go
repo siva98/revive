@@ -26,7 +26,6 @@ var defaultRules = []lint.Rule{
 	&rule.PackageCommentsRule{},
 	&rule.DotImportsRule{},
 	&rule.BlankImportsRule{},
-	&rule.ExportedRule{},
 	&rule.VarNamingRule{},
 	&rule.IndentErrorFlowRule{},
 	&rule.IfReturnRule{},
@@ -46,9 +45,11 @@ var defaultRules = []lint.Rule{
 	&rule.GoRoutinesRule{},
 	&rule.ReadAfterWriteRule{},
 	&rule.BlacklistedChaincodeImportsRule{},
+	&rule.PhantomReadsRule{},
 }
 
 var allRules = append([]lint.Rule{
+	&rule.ExportedRule{},
 	&rule.ArgumentsLimitRule{},
 	&rule.CyclomaticRule{},
 	&rule.FileHeaderRule{},

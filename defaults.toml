@@ -28,3 +28,5 @@ warningCode = 0
 [rule.read-after-write]
 [rule.blacklisted-chaincode-imports]
 [rule.phantom-reads]
+[rule.range-over-map]
+[rule.global-variables]

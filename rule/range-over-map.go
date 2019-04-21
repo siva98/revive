@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"go/ast"
 	"go/format"
-	"go/importer"
 	"go/token"
 	"go/types"
-	"log"
 
 	"github.com/mgechev/revive/lint"
 )
@@ -27,6 +25,7 @@ func (r *RangeOverMapRule) Apply(file *lint.File, _ lint.Arguments) []lint.Failu
 		},
 	}
 
+	file.Pkg.TypeCheck()
 	ast.Walk(walker, fileAst)
 
 	return failures
@@ -46,15 +45,7 @@ type lintRangeOverMap struct {
 var rangeOverMapName string
 
 func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
-	var fset = token.NewFileSet()
-
-	conf := types.Config{Importer: importer.Default()}
-	info := &types.Info{Types: make(map[ast.Expr]types.TypeAndValue),
-		Defs: make(map[*ast.Ident]types.Object)}
-
-	if _, err := conf.Check("cmd/hello", fset, []*ast.File{w.fileAst}, info); err != nil {
-		log.Fatal(err) // type error
-	}
+	f := w.file
 
 	rangeOverMapName = ""
 
@@ -64,7 +55,7 @@ func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
 
 		ast.Inspect(node, func(x ast.Node) bool {
 			if expr, ok := x.(ast.Expr); ok {
-				if tv, ok := info.Types[expr]; ok {
+				if tv, ok := f.Pkg.TypesInfo.Types[expr]; ok {
 					mapString := tv.Type.String()[0:3]
 
 					if rangeOverMapName == nodeStringRangeOverMap(expr) && n.X.Pos() == expr.Pos() && mapString == "map" {

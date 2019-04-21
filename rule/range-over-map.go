@@ -2,11 +2,9 @@ package rule
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/format"
 	"go/importer"
-	"go/parser"
 	"go/token"
 	"go/types"
 	"log"
@@ -48,18 +46,13 @@ type lintRangeOverMap struct {
 var rangeOverMapName string
 
 func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
-	src := node
 	var fset = token.NewFileSet()
-	nodes, err := parser.ParseFile(fset, "src.go", src, 0)
-	if err != nil {
-		log.Fatal(err) // parse error
-	}
 
 	conf := types.Config{Importer: importer.Default()}
 	info := &types.Info{Types: make(map[ast.Expr]types.TypeAndValue),
 		Defs: make(map[*ast.Ident]types.Object)}
 
-	if _, err := conf.Check("cmd/hello", fset, []*ast.File{nodes}, info); err != nil {
+	if _, err := conf.Check("cmd/hello", fset, []*ast.File{w.fileAst}, info); err != nil {
 		log.Fatal(err) // type error
 	}
 
@@ -75,7 +68,12 @@ func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
 					mapString := tv.Type.String()[0:3]
 
 					if rangeOverMapName == nodeStringRangeOverMap(expr) && n.X.Pos() == expr.Pos() && mapString == "map" {
-						fmt.Println("RANGE OVER MAP DETECTED")
+						w.onFailure(lint.Failure{
+							Confidence: 1,
+							Failure:    "should not use range over map, will lead to non-deterministic behaviour",
+							Node:       n,
+							Category:   "control flow",
+						})
 					}
 				}
 			}

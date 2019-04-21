@@ -46,6 +46,8 @@ var defaultRules = []lint.Rule{
 	&rule.ReadAfterWriteRule{},
 	&rule.BlacklistedChaincodeImportsRule{},
 	&rule.PhantomReadsRule{},
+	&rule.RangeOverMapRule{},
+	&rule.GlobalVariablesRule{},
 }
 
 var allRules = append([]lint.Rule{

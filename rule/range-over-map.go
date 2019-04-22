@@ -43,11 +43,13 @@ type lintRangeOverMap struct {
 }
 
 var rangeOverMapName string
+var mapString string
 
 func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
 	f := w.file
 
 	rangeOverMapName = ""
+	mapString = ""
 
 	switch n := node.(type) {
 	case *ast.RangeStmt:
@@ -56,7 +58,9 @@ func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
 		ast.Inspect(node, func(x ast.Node) bool {
 			if expr, ok := x.(ast.Expr); ok {
 				if tv, ok := f.Pkg.TypesInfo.Types[expr]; ok {
-					mapString := tv.Type.String()[0:3]
+					if len(tv.Type.String()) > 3 {
+						mapString = tv.Type.String()[0:3]
+					}
 
 					if rangeOverMapName == nodeStringRangeOverMap(expr) && n.X.Pos() == expr.Pos() && mapString == "map" {
 						w.onFailure(lint.Failure{

@@ -1,7 +1,9 @@
 package rule
 
 import (
+	"bytes"
 	"go/ast"
+	"go/format"
 	"go/token"
 
 	"github.com/mgechev/revive/lint"
@@ -38,26 +40,47 @@ type lintGlobalVariables struct {
 	onFailure func(lint.Failure)
 }
 
-func (w lintGlobalVariables) Visit(node ast.Node) ast.Visitor {
-	switch n := node.(type) {
-	case *ast.GenDecl:
-		if n.Tok == token.VAR {
-			ast.Inspect(node, func(x ast.Node) bool {
-				switch x := x.(type) {
-				case *ast.FuncDecl:
-					if n.TokPos < x.Body.Lbrace || n.TokPos > x.Body.Rbrace {
-						w.onFailure(lint.Failure{
-							Confidence: 1,
-							Failure:    "should not use global variables, will lead to non-deterministic behaviour",
-							Node:       n,
-							Category:   "variables",
-						})
-					}
-				}
-				return true
-			})
+var localVars []string
+var globalVar bool
 
+func (w lintGlobalVariables) Visit(node ast.Node) ast.Visitor {
+	switch n := n.(type) {
+	case *ast.FuncDecl:
+		ast.Inspect(n.Body, func(x ast.Node) bool {
+			switch x := x.(type) {
+			case *ast.ValueSpec:
+				for _, name := range x.Names {
+					localVars = append(localVars, nodeStringGlobalVars(name))
+				}
+			}
+			return true
+		})
+	case *ast.ValueSpec:
+		for _, name := range n.Names {
+			globalVar = true
+			for _, localVar := range localVars {
+				if nodeStringGlobalVars(name) == localVar {
+					globalVar = false
+				}
+			}
+			if globalVar == true {
+				w.onFailure(lint.Failure{
+					Confidence: 1,
+					Failure:    "should not use global variables, will lead to non-deterministic behaviour",
+					Node:       n,
+					Category:   "variables",
+				})
+				return w
+			}
 		}
 	}
+
 	return w
+}
+
+func nodeStringGlobalVars(n ast.Node) string {
+	var fset = token.NewFileSet()
+	var buf bytes.Buffer
+	format.Node(&buf, fset, n)
+	return buf.String()
 }

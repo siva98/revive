@@ -44,7 +44,7 @@ var localVars []string
 var globalVar bool
 
 func (w lintGlobalVariables) Visit(node ast.Node) ast.Visitor {
-	switch n := n.(type) {
+	switch n := node.(type) {
 	case *ast.FuncDecl:
 		ast.Inspect(n.Body, func(x ast.Node) bool {
 			switch x := x.(type) {

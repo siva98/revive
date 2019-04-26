@@ -2,6 +2,7 @@ package rule
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/format"
 	"go/token"
@@ -66,7 +67,7 @@ func (w lintGlobalVariables) Visit(node ast.Node) ast.Visitor {
 			if globalVar == true {
 				w.onFailure(lint.Failure{
 					Confidence: 1,
-					Failure:    "should not use global variables, will lead to non-deterministic behaviour",
+					Failure:    fmt.Sprintf("global variable detected: %s; should not use global variables, will lead to non-deterministic behaviour", name),
 					Node:       n,
 					Category:   "variables",
 				})

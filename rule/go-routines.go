@@ -6,6 +6,7 @@ import (
 	"github.com/mgechev/revive/lint"
 )
 
+// Goroutines Rule detects the use of goroutines
 type GoRoutinesRule struct{}
 
 // Apply applies the rule to given file.
@@ -37,6 +38,7 @@ type lintGoRoutines struct {
 	onFailure func(lint.Failure)
 }
 
+//AST Traversal
 func (w lintGoRoutines) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.GoStmt:

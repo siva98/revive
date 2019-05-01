@@ -1,3 +1,17 @@
+Installation guide:
+1. Place folder in the your $GOPATH/src/github.com
+2. Go into directory siva98/revive
+3. $ make install
+4. $ make build
+5. Move the revive file into $GOPATH/bin
+6. You should now be able to use revive commands
+7. $ revive {filename.go} - will analyse the file
+8. $ revive -formatter stylish {filename.go} - better output format
+9. $ revive - on a directory will analyse all files if from the same package
+
+
+
+
 [![Build Status](https://travis-ci.org/mgechev/revive.svg?branch=master)](https://travis-ci.org/mgechev/revive)
 
 # revive

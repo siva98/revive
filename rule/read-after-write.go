@@ -10,6 +10,7 @@ import (
 	"github.com/mgechev/revive/lint"
 )
 
+// Read after write rule detects read after write calls
 type ReadAfterWriteRule struct{}
 
 // Apply applies the rule to given file.
@@ -41,48 +42,50 @@ type lintReadAfterWrite struct {
 	onFailure func(lint.Failure)
 }
 
+// Global Variables
 var writeKey string
 var readKey string
 
+// AST Traversal
 func (w lintReadAfterWrite) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.FuncDecl:
 		writeKey = ""
 		readKey = ""
 
-		ast.Inspect(n.Body, func(x ast.Node) bool {
-			switch x := x.(type) {
+		ast.Inspect(n.Body, func(writeNode ast.Node) bool {
+			switch writeNode := writeNode.(type) {
 			case *ast.CallExpr:
-				callExpr := nodeString(x.Fun)
+				functionExpression := nodeString(writeNode.Fun)
 
-				if strings.Contains(callExpr, ".") {
-					putState := strings.Split(callExpr, ".")
+				if strings.Contains(functionExpression, ".") {
+					functionCall := strings.Split(functionExpression, ".")
 
-					if putState[1] == "PutState" {
-						writeKey = nodeString(x.Args[0])
+					if functionCall[1] == "PutState" {
+						writeKey = nodeString(writeNode.Args[0])
 
-						ast.Inspect(n.Body, func(y ast.Node) bool {
-							switch y := y.(type) {
+						ast.Inspect(n.Body, func(readNode ast.Node) bool {
+							switch readNode := readNode.(type) {
 							case *ast.CallExpr:
-								callExpr = nodeString(y.Fun)
+								functionExpression = nodeString(readNode.Fun)
 
-								if strings.Contains(callExpr, ".") {
-									putState := strings.Split(callExpr, ".")
+								if strings.Contains(functionExpression, ".") {
+									functionCall := strings.Split(functionExpression, ".")
 
-									if putState[1] == "GetState" {
-										readKey = nodeString(y.Args[0])
+									if functionCall[1] == "GetState" {
+										readKey = nodeString(readNode.Args[0])
 
-										if y.Pos() > x.Pos() && readKey == writeKey {
+										if readNode.Pos() > writeNode.Pos() && readKey == writeKey {
 											w.onFailure(lint.Failure{
 												Confidence: 1,
 												Failure:    "should not read after write: write",
-												Node:       x,
+												Node:       writeNode,
 												Category:   "control flow",
 											})
 											w.onFailure(lint.Failure{
 												Confidence: 1,
 												Failure:    "should not read after write: read",
-												Node:       y,
+												Node:       readNode,
 												Category:   "control flow",
 											})
 
@@ -103,6 +106,7 @@ func (w lintReadAfterWrite) Visit(node ast.Node) ast.Visitor {
 	return w
 }
 
+//Returns string representation of a node
 func nodeString(n ast.Node) string {
 	var fset = token.NewFileSet()
 	var buf bytes.Buffer

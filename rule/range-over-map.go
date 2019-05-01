@@ -10,6 +10,7 @@ import (
 	"github.com/mgechev/revive/lint"
 )
 
+// Range over map rule detects range map iterations
 type RangeOverMapRule struct{}
 
 // Apply applies the rule to given file.
@@ -42,9 +43,11 @@ type lintRangeOverMap struct {
 	onFailure func(lint.Failure)
 }
 
+// Global Variables
 var rangeOverMapName string
 var mapString string
 
+// AST traversal logic
 func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
 	f := w.file
 
@@ -78,6 +81,7 @@ func (w lintRangeOverMap) Visit(node ast.Node) ast.Visitor {
 	return w
 }
 
+// Returns a string representation of a node
 func nodeStringRangeOverMap(n ast.Node) string {
 	var fset = token.NewFileSet()
 	var buf bytes.Buffer

@@ -10,6 +10,7 @@ import (
 	"github.com/mgechev/revive/lint"
 )
 
+// Global Variables Rule detects Global State Variables
 type GlobalVariablesRule struct{}
 
 // Apply applies the rule to given file.
@@ -41,37 +42,58 @@ type lintGlobalVariables struct {
 	onFailure func(lint.Failure)
 }
 
+// Global Variables
 var localVars []string
 var globalVar bool
 
+// AST Traversal
 func (w lintGlobalVariables) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.FuncDecl:
-		ast.Inspect(n.Body, func(x ast.Node) bool {
-			switch x := x.(type) {
-			case *ast.ValueSpec:
-				for _, name := range x.Names {
-					localVars = append(localVars, nodeStringGlobalVars(name))
+		ast.Inspect(n.Body, func(localNode ast.Node) bool {
+			switch localNode := localNode.(type) {
+			case *ast.GenDecl:
+				if localNode.Tok == token.VAR {
+					for _, varDecl := range localNode.Specs {
+						ast.Inspect(varDecl, func(localVarNode ast.Node) bool {
+							switch localVarNode := localVarNode.(type) {
+							case *ast.ValueSpec:
+								for _, name := range localVarNode.Names {
+									localVars = append(localVars, nodeString(name))
+								}
+							}
+							return true
+						})
+					}
 				}
 			}
 			return true
 		})
-	case *ast.ValueSpec:
-		for _, name := range n.Names {
-			globalVar = true
-			for _, localVar := range localVars {
-				if nodeStringGlobalVars(name) == localVar {
-					globalVar = false
-				}
-			}
-			if globalVar == true {
-				w.onFailure(lint.Failure{
-					Confidence: 1,
-					Failure:    fmt.Sprintf("global variable detected: %s; should not use global variables, will lead to non-deterministic behaviour", name),
-					Node:       n,
-					Category:   "variables",
+	case *ast.GenDecl:
+		if n.Tok == token.VAR {
+			for _, varDecl := range n.Specs {
+				ast.Inspect(varDecl, func(varNode ast.Node) bool {
+					switch varNode := varNode.(type) {
+					case *ast.ValueSpec:
+						for _, name := range varNode.Names {
+							globalVar = true
+							for _, localVar := range localVars {
+								if nodeString(name) == localVar {
+									globalVar = false
+								}
+							}
+							if globalVar == true {
+								w.onFailure(lint.Failure{
+									Confidence: 1,
+									Failure:    fmt.Sprintf("global variable detected: %s; should not use global variables, will lead to non-deterministic behaviour", name),
+									Node:       n,
+									Category:   "variables",
+								})
+							}
+						}
+					}
+					return true
 				})
-				return w
 			}
 		}
 	}
@@ -79,6 +101,7 @@ func (w lintGlobalVariables) Visit(node ast.Node) ast.Visitor {
 	return w
 }
 
+// Returns string representation of node
 func nodeStringGlobalVars(n ast.Node) string {
 	var fset = token.NewFileSet()
 	var buf bytes.Buffer

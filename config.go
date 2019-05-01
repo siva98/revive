@@ -22,6 +22,16 @@ func fail(err string) {
 }
 
 var defaultRules = []lint.Rule{
+	&rule.ImportsBlacklistRule{},
+	&rule.GoRoutinesRule{},
+	&rule.ReadAfterWriteRule{},
+	&rule.BlacklistedChaincodeImportsRule{},
+	&rule.PhantomReadsRule{},
+	&rule.RangeOverMapRule{},
+	&rule.GlobalVariablesRule{},
+}
+
+var allRules = append([]lint.Rule{
 	&rule.VarDeclarationsRule{},
 	&rule.PackageCommentsRule{},
 	&rule.DotImportsRule{},
@@ -41,16 +51,6 @@ var defaultRules = []lint.Rule{
 	&rule.ContextKeysType{},
 	&rule.ContextAsArgumentRule{},
         &rule.DivideByZeroRule{},
-	&rule.ImportsBlacklistRule{},
-	&rule.GoRoutinesRule{},
-	&rule.ReadAfterWriteRule{},
-	&rule.BlacklistedChaincodeImportsRule{},
-	&rule.PhantomReadsRule{},
-	&rule.RangeOverMapRule{},
-	&rule.GlobalVariablesRule{},
-}
-
-var allRules = append([]lint.Rule{
 	&rule.ExportedRule{},
 	&rule.ArgumentsLimitRule{},
 	&rule.CyclomaticRule{},

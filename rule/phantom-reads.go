@@ -10,6 +10,7 @@ import (
 	"github.com/mgechev/revive/lint"
 )
 
+// Phantom reads rule detects phantom reads of ledger
 type PhantomReadsRule struct{}
 
 // Apply applies the rule to given file.
@@ -41,68 +42,71 @@ type lintPhantomReads struct {
 	onFailure func(lint.Failure)
 }
 
+// Global Variables
 var writeQueryOrKey string
 var getQueryOrKey string
 
+// AST Traversal
 func (w lintPhantomReads) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.FuncDecl:
 		writeKey = ""
 		getQueryOrKey = ""
 
-    ast.Inspect(n.Body, func(x ast.Node) bool {
-      switch x := x.(type) {
-      case *ast.CallExpr:
-        callExpr := nodeStringPhantomReads(x.Fun)
+		ast.Inspect(n.Body, func(phantomReadNode ast.Node) bool {
+			switch phantomReadNode := phantomReadNode.(type) {
+			case *ast.CallExpr:
+				functionExpression := nodeStringPhantomReads(phantomReadNode.Fun)
 
-        if strings.Contains(callExpr, ".") {
-          putState := strings.Split(callExpr, ".")
+				if strings.Contains(functionExpression, ".") {
+					functionCall := strings.Split(functionExpression, ".")
 
-          if putState[1] == "GetHistoryForKey" || putState[1] == "GetQueryResult" {
-            getQueryOrKey = nodeStringPhantomReads(x.Args[0])
+					if functionCall[1] == "GetHistoryForKey" || functionCall[1] == "GetQueryResult" {
+						getQueryOrKey = nodeStringPhantomReads(phantomReadNode.Args[0])
 
-            ast.Inspect(n.Body, func(y ast.Node) bool {
-              switch y := y.(type) {
-              case *ast.CallExpr:
-                callExpr = nodeStringPhantomReads(y.Fun)
+						ast.Inspect(n.Body, func(writeNode ast.Node) bool {
+							switch writeNode := writeNode.(type) {
+							case *ast.CallExpr:
+								functionExpression = nodeStringPhantomReads(writeNode.Fun)
 
-                if strings.Contains(callExpr, ".") {
-                  putState := strings.Split(callExpr, ".")
+								if strings.Contains(functionExpression, ".") {
+									functionCall := strings.Split(functionExpression, ".")
 
-                  if putState[1] == "PutState" {
-                    writeQueryOrKey = nodeStringPhantomReads(y.Args[0])
+									if functionCall[1] == "PutState" {
+										writeQueryOrKey = nodeStringPhantomReads(writeNode.Args[0])
 
-                    if y.Pos() > x.Pos() && writeQueryOrKey == getQueryOrKey {
-                      w.onFailure(lint.Failure{
+										if writeNode.Pos() > phantomReadNode.Pos() && writeQueryOrKey == getQueryOrKey {
+											w.onFailure(lint.Failure{
 												Confidence: 1,
 												Failure:    "data obtained from phantom reads should not be used to write new data or update data on the ledger: write",
-												Node:       x,
+												Node:       phantomReadNode,
 												Category:   "control flow",
 											})
 											w.onFailure(lint.Failure{
 												Confidence: 1,
 												Failure:    "data obtained from phantom reads should not be used to write new data or update data on the ledger: read",
-												Node:       y,
+												Node:       writeNode,
 												Category:   "control flow",
 											})
 
 											return true
-                    }
-                  }
-                }
-              }
-              return true
-            })
-          }
-        }
-      }
-      return true
-    })
+										}
+									}
+								}
+							}
+							return true
+						})
+					}
+				}
+			}
+			return true
+		})
 
 	}
 	return w
 }
 
+// Returns the string representation of a node
 func nodeStringPhantomReads(n ast.Node) string {
 	var fset = token.NewFileSet()
 	var buf bytes.Buffer
